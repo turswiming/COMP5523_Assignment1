@@ -1,6 +1,7 @@
 from PIL import Image # pillow package
 import numpy as np
 from scipy import ndimage
+from PIL import ImageDraw
 
 def read_img_as_array(file):
     '''read image and convert it to numpy array with dtype np.float64'''
@@ -142,17 +143,60 @@ def hysteresis_thresholding(G, low, high):
 
 def hough(G_hyst):
     '''Return Hough transform of G'''
-    # TODO: Please complete this function.
-    # your code here
-    pass
+    rho_max = int(np.hypot(G_hyst.shape[0], G_hyst.shape[1]))
+    theta_max = 180
+    scale_rho = 1
+    scale_theta = 1
+    hough_space = np.zeros((2 * rho_max*scale_rho, theta_max*scale_theta))
+
+    for i in range(G_hyst.shape[0]):
+        for j in range(G_hyst.shape[1]):
+            if G_hyst[i, j] == 255:
+                for theta in range(theta_max):
+                    rho = int(i * np.cos(theta * np.pi / 180) + j * np.sin(theta * np.pi / 180))
+                    rho_index = rho + rho_max  # Shift rho to positive index
+                    if 0 <= rho_index < 2 * rho_max:
+                        hough_space[rho_index, theta] += 1
+
+    hough_voting_path = "data/2.6_hough.jpg"
+    save_array_as_img(hough_space, hough_voting_path)
+
+    # hough_space = ndimage.gaussian_filter(hough_space, sigma=3)
+
+    def get_local_max(img):
+        local_max = np.zeros(img.shape)
+        for i in range(1, img.shape[0] - 1):
+            for j in range(1, img.shape[1] - 1):
+                if img[i, j] > img[i - 1, j - 1] and img[i, j] > img[i - 1, j] and img[i, j] > img[i - 1, j + 1] and \
+                   img[i, j] > img[i, j - 1] and img[i, j] > img[i, j + 1] and img[i, j] > img[i + 1, j - 1] and \
+                   img[i, j] > img[i + 1, j] and img[i, j] > img[i + 1, j + 1]:
+                    local_max[i, j] = img[i, j]
+        return local_max
+
+    local_max = get_local_max(hough_space)
+
+    top_line_size = 10
+    top_lines = []
+    for _ in range(top_line_size):
+        rho, theta = np.unravel_index(local_max.argmax(), local_max.shape)
+        top_lines.append((rho - rho_max, theta))  # Adjust rho back to original range
+        local_max[rho, theta] = 0
+    colored_hough = np.zeros((hough_space.shape[0], hough_space.shape[1], 3))
+    colored_hough[:, :, 0] = hough_space
+
+    im = Image.fromarray((colored_hough * 255 / np.max(colored_hough)).astype(np.uint8))
+    draw = ImageDraw.Draw(im)
+    for rho, theta in top_lines:
+        draw.point((theta, rho + rho_max))  # Adjust rho for drawing
+    im.show()
+    return top_lines
+    
 
 if __name__ == '__main__':
     input_path = 'data/road.jpeg'
     img = read_img_as_array(input_path)
-    #show_array_as_img(img)
-    #TODO: finish assignment Part II: detect edges on 'img'
     gray_path = 'data/2.1_gray.jpg'
-    G_path  = "data/2.3_G.jpg"
+    G_path = "data/2.3_G.jpg"
     Gx_path = "data/2.3_G_x.jpg"
     Gy_path = "data/2.3_G_y.jpg"
     supressed_G_path = "data/2.4_supress.jpg"
@@ -172,5 +216,22 @@ if __name__ == '__main__':
     save_array_as_img(low, edgemap_low_path)
     save_array_as_img(high, edgemap_high_path)
     save_array_as_img(hyst, edgemap_hyst_path)
-    #hough transform
+    top_lines = hough(hyst)
+    print(top_lines)
+    top_lines_ab = []
+    for rho, theta in top_lines:
+        theta_rad = np.deg2rad(theta)
+        a = -np.cos(theta_rad) / np.sin(theta_rad)
+        a = 1/a
+        b = rho / np.cos(theta_rad)
+        top_lines_ab.append((a, b))
+    im = Image.open(input_path)
+    draw = ImageDraw.Draw(im)
+    for a, b in top_lines_ab:
+        x0 = 0
+        y0 = a * x0 + b
+        x1 = im.size[0]
+        y1 = a * x1 + b
+        draw.line((x0, y0, x1, y1), fill=128)
+    im.show()
     

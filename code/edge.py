@@ -172,5 +172,5 @@ if __name__ == '__main__':
     save_array_as_img(low, edgemap_low_path)
     save_array_as_img(high, edgemap_high_path)
     save_array_as_img(hyst, edgemap_hyst_path)
-    #save_path = './data/gray.jpg'
-    #save_array_as_img(gray, save_path)
+    #hough transform
+    

@@ -146,22 +146,23 @@ def hough(G_hyst):
     rho_max = int(np.hypot(G_hyst.shape[0], G_hyst.shape[1]))
     theta_max = 180
     scale_rho = 1
-    scale_theta = 1
+    scale_theta = 5
     hough_space = np.zeros((2 * rho_max*scale_rho, theta_max*scale_theta))
 
     for i in range(G_hyst.shape[0]):
         for j in range(G_hyst.shape[1]):
             if G_hyst[i, j] == 255:
-                for theta in range(theta_max):
-                    rho = int(i * np.cos(theta * np.pi / 180) + j * np.sin(theta * np.pi / 180))
+                for theta in range(theta_max*scale_theta):
+                    theta = theta / scale_theta
+                    rho = i * np.cos(theta * np.pi / 180) + j * np.sin(theta * np.pi / 180)
                     rho_index = rho + rho_max  # Shift rho to positive index
-                    if 0 <= rho_index < 2 * rho_max:
-                        hough_space[rho_index, theta] += 1
+                    rho_index = int(rho_index * scale_rho)
+                    if 0 <= rho_index < 2 * rho_max*scale_rho:
+                        hough_space[rho_index, int(theta*scale_theta)] += 1
 
     hough_voting_path = "data/2.6_hough.jpg"
     save_array_as_img(hough_space, hough_voting_path)
 
-    # hough_space = ndimage.gaussian_filter(hough_space, sigma=3)
 
     def get_local_max(img):
         local_max = np.zeros(img.shape)
@@ -175,11 +176,11 @@ def hough(G_hyst):
 
     local_max = get_local_max(hough_space)
 
-    top_line_size = 10
+    top_line_size = 30
     top_lines = []
     for _ in range(top_line_size):
         rho, theta = np.unravel_index(local_max.argmax(), local_max.shape)
-        top_lines.append((rho - rho_max, theta))  # Adjust rho back to original range
+        top_lines.append((rho/scale_rho - rho_max, theta/scale_theta))  # Adjust rho back to original range
         local_max[rho, theta] = 0
     colored_hough = np.zeros((hough_space.shape[0], hough_space.shape[1], 3))
     colored_hough[:, :, 0] = hough_space
@@ -187,7 +188,7 @@ def hough(G_hyst):
     im = Image.fromarray((colored_hough * 255 / np.max(colored_hough)).astype(np.uint8))
     draw = ImageDraw.Draw(im)
     for rho, theta in top_lines:
-        draw.point((theta, rho + rho_max))  # Adjust rho for drawing
+        draw.point((theta*scale_theta, (rho + rho_max)*scale_rho))  # Adjust rho for drawing
     im.show()
     return top_lines
     
@@ -234,4 +235,6 @@ if __name__ == '__main__':
         y1 = a * x1 + b
         draw.line((x0, y0, x1, y1), fill=128)
     im.show()
+    #save the drawn image
+    im.save("data/2.7_detection_result.jpg")
     

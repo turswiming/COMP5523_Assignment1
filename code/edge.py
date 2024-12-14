@@ -213,7 +213,7 @@ if __name__ == '__main__':
     save_array_as_img(Gy, Gy_path)
     supressed_array = nonmax_suppress(G, Gx, Gy)
     save_array_as_img(supressed_array, supressed_G_path)
-    low, high, hyst = hysteresis_thresholding(G, 100, 200)
+    low, high, hyst = hysteresis_thresholding(supressed_array, 100, 200)
     save_array_as_img(low, edgemap_low_path)
     save_array_as_img(high, edgemap_high_path)
     save_array_as_img(hyst, edgemap_hyst_path)

@@ -154,7 +154,7 @@ def hough(G_hyst):
             if G_hyst[i, j] == 255:
                 for theta in range(theta_max*scale_theta):
                     theta = theta / scale_theta
-                    rho = i * np.cos(theta * np.pi / 180) + j * np.sin(theta * np.pi / 180)
+                    rho = j * np.cos(theta * np.pi / 180) + i * np.sin(theta * np.pi / 180)
                     rho_index = rho + rho_max  # Shift rho to positive index
                     rho_index = int(rho_index * scale_rho)
                     if 0 <= rho_index < 2 * rho_max*scale_rho:
@@ -223,8 +223,7 @@ if __name__ == '__main__':
     for rho, theta in top_lines:
         theta_rad = np.deg2rad(theta)
         a = -np.cos(theta_rad) / np.sin(theta_rad)
-        a = 1/a
-        b = rho / np.cos(theta_rad)
+        b = rho / np.sin(theta_rad)
         top_lines_ab.append((a, b))
     im = Image.open(input_path)
     draw = ImageDraw.Draw(im)

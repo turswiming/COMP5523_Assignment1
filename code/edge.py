@@ -166,11 +166,15 @@ def hough(G_hyst):
 
     def get_local_max(img):
         local_max = np.zeros(img.shape)
-        for i in range(1, img.shape[0] - 1):
-            for j in range(1, img.shape[1] - 1):
-                if img[i, j] > img[i - 1, j - 1] and img[i, j] > img[i - 1, j] and img[i, j] > img[i - 1, j + 1] and \
-                   img[i, j] > img[i, j - 1] and img[i, j] > img[i, j + 1] and img[i, j] > img[i + 1, j - 1] and \
-                   img[i, j] > img[i + 1, j] and img[i, j] > img[i + 1, j + 1]:
+        for i in range(3, img.shape[0] - 4):
+            for j in range(3, img.shape[1] - 4):
+                is_max = True
+                for x in range(-3, 4):
+                    for y in range(-3, 4):
+                        if img[i, j] < img[i + x, j + y]:
+                            is_max = False
+                            break
+                if is_max:
                     local_max[i, j] = img[i, j]
         return local_max
 

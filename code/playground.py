@@ -9,8 +9,8 @@ def draw_3d(arr):
     y = np.arange(arr.shape[1])
     X, Y = np.meshgrid(x, y)
     ax.plot_surface(X, Y, arr, cmap='viridis')
-    plt.show()
-
+    plt.savefig('3d_plot.png')  # Save the plot to a file
+    plt.close(fig)
 x_Size = 100
 y_Size = 100
 a = np.array(
@@ -20,17 +20,21 @@ a = np.array(
         ])
 print(a*a)
 
-# img = np.zeros((x_Size, y_Size))
-# for x in range(x_Size):
-#     for y in range(y_Size):
+img = np.zeros((x_Size, y_Size))
+for x in range(x_Size):
+    for y in range(y_Size):
 
-#         vec = np.array([x-x_Size/2, y-x_Size/2])
-#         vec = vec.reshape(1,2)
-#         vecT = vec.T
-#         lambda_array = np.array([[2,0],[0,1]])
-#         val = np.dot(vec,lambda_array)
-#         val = np.dot(val,vecT)
-#         img[x, y] = val
+        vec = np.array([x-x_Size/2, y-x_Size/2])
+        vec = vec.reshape(1,2)
+        vecT = vec.T
+        lambda_array = np.array([
+            [3,0],
+            [0,1]
+            ])
+        val = np.dot(vec,lambda_array)
+        val = np.dot(val,vecT)
+        val = val[0,0]
+        img[x, y] = val
 
 
-# draw_3d(img)
+draw_3d(img)

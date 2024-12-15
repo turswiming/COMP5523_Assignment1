@@ -45,9 +45,9 @@ def sobel(arr):
     # TODO: Please complete this function.
     # your code here
     sobel_kernel_x = np.array([
-        [-1, 0, 1], 
-        [-2, 0, 2], 
-        [-1, 0, 1]])
+        [1, 0, -1], 
+        [2, 0, -2], 
+        [1, 0, -1]])
     sobel_kernel_y = np.array([
         [1, 2, 1], 
         [0, 0, 0], 
@@ -90,14 +90,14 @@ def nonmax_suppress(G, Gx, Gy):
         for j in range(1, G.shape[1]-1):
             theta = theta_array[i,j]
             if 22.5<theta<67.5 or -112.5<theta<-67.5:
-                N1 = G[i-1, j+1]
-                N2 = G[i+1, j-1]
+                N1 = G[i+1, j+1]
+                N2 = G[i-1, j-1]
             elif 67.5<theta<112.5 or -67.5<theta<-22.5:
                 N1 = G[i-1, j]
                 N2 = G[i+1, j]
             elif 112.5<theta<157.5 or -22.5<theta<22.5:
-                N1 = G[i-1, j-1]
-                N2 = G[i+1, j+1]
+                N1 = G[i-1, j+1]
+                N2 = G[i+1, j-1]
             else:
                 N1 = G[i, j-1]
                 N2 = G[i, j+1]
